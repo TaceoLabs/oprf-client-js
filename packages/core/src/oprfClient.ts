@@ -1,4 +1,3 @@
-import { hash_to_field } from '@noble/curves/abstract/hash-to-curve';
 import { encodeToCurve } from './encodeToCurve.js';
 import { babyjubjub } from '@noble/curves/misc';
 import { bn254 } from '@taceo/poseidon2';
