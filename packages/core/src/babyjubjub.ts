@@ -20,6 +20,7 @@ export const G = babyjubjub.Point.fromAffine(
 );
 
 export { babyjubjub };
+export type { AffinePoint };
 
 const BYTES = 32;
 

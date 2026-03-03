@@ -37,4 +37,22 @@ export {
   reconstruct,
 } from './shamir.js';
 
-export { G, Fr, Fq, babyjubjub } from './babyjubjub.js';
+export {
+  G,
+  Fr,
+  Fq,
+  babyjubjub,
+  BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE,
+  type AffinePoint,
+} from './babyjubjub.js';
+export {
+  blindQuery,
+  unblindResponse,
+  finalizeOutput,
+  finalizeQuery,
+  randomBlindingFactor,
+  prepareBlindingFactor,
+  type BlindingFactor,
+  type PreparedBlindingFactor,
+} from './oprfClient.js';
+export { babyJubJubAffineToCompressedBytes } from './babyjubjub.js';
