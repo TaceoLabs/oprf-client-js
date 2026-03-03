@@ -1,8 +1,6 @@
 import { encodeToCurve } from './encodeToCurve.js';
-import { babyjubjub } from '@noble/curves/misc';
+import { Fq, babyjubjub } from './babyjubjub.js';
 import { bn254 } from '@taceo/poseidon2';
-
-const Fp = babyjubjub.Point.Fp;
 
 export function blindQuery(
   query: bigint,
@@ -19,7 +17,7 @@ export function finalizeQuery(
   domainSeparator: bigint
 ): bigint {
   // unblind the response
-  const betaInv = Fp.inv(blindingFactor);
+  const betaInv = Fq.inv(blindingFactor);
   const responseUnblinded = response.multiply(betaInv);
   const responseUnblindedAffine = responseUnblinded.toAffine();
   // compute the second hash in the TwoHashDH construction

@@ -2,17 +2,15 @@ import { describe, it, expect } from 'vitest';
 import {
   dlogEqualityProof,
   dlogEqualityVerify,
-  SCALAR_ORDER,
   InvalidProofError,
   encodeToCurve,
+  G,
+  Fr,
 } from '../src/index.js';
-import { babyjubjub } from '@noble/curves/misc';
 
 describe('dlogEquality', () => {
-  const G = babyjubjub.Point.BASE;
-
   it('proves and verifies with B = G (generator)', () => {
-    const x = 12345n % SCALAR_ORDER;
+    const x = 12345n;
     const B = G;
     const A = G.multiply(x);
     const C = B.multiply(x);
@@ -31,7 +29,7 @@ describe('dlogEquality', () => {
   });
 
   it('proves and verifies: valid proof passes', () => {
-    const x = 12345n % SCALAR_ORDER;
+    const x = 12345n;
     const B = encodeToCurve(42n);
     const A = G.multiply(x);
     const C = B.multiply(x);
@@ -40,7 +38,7 @@ describe('dlogEquality', () => {
     const proof = dlogEqualityProof(B.toAffine(), x);
     expect(proof.e).toBeDefined();
     expect(proof.s).toBeDefined();
-    expect(proof.s < SCALAR_ORDER).toBe(true);
+    expect(Fr.isValid(proof.s)).toBe(true);
 
     expect(() =>
       dlogEqualityVerify(
@@ -54,7 +52,7 @@ describe('dlogEquality', () => {
   });
 
   it('verify fails when B is wrong (same proof, different B)', () => {
-    const x = 12345n % SCALAR_ORDER;
+    const x = 12345n;
     const B = encodeToCurve(42n);
     const B2 = encodeToCurve(99n);
     const A = G.multiply(x);
@@ -74,14 +72,17 @@ describe('dlogEquality', () => {
   });
 
   it('verify fails when s is tampered (s >= r)', () => {
-    const x = 12345n % SCALAR_ORDER;
+    const x = 12345n;
     const B = encodeToCurve(42n);
     const A = G.multiply(x);
     const C = B.multiply(x);
     const D = G;
 
     const proof = dlogEqualityProof(B.toAffine(), x);
-    const badProof = { ...proof, s: proof.s + SCALAR_ORDER };
+    const badProof = {
+      ...proof,
+      s: proof.s + Fr.ORDER,
+    };
     expect(() =>
       dlogEqualityVerify(
         badProof,
@@ -94,7 +95,7 @@ describe('dlogEquality', () => {
   });
 
   it('verify fails when e is tampered', () => {
-    const x = 12345n % SCALAR_ORDER;
+    const x = 12345n;
     const B = encodeToCurve(42n);
     const A = G.multiply(x);
     const C = B.multiply(x);
@@ -114,7 +115,7 @@ describe('dlogEquality', () => {
   });
 
   it('accepts affine points for proof and verify', () => {
-    const x = 7n % SCALAR_ORDER;
+    const x = 7n;
     const B = encodeToCurve(1n);
     const aAffine = G.multiply(x).toAffine();
     const bAffine = B.toAffine();

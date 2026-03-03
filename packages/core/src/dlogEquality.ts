@@ -6,17 +6,17 @@
 
 import { AffinePoint } from '@noble/curves/abstract/curve';
 import { bn254_Fr } from '@noble/curves/bn254';
-import { babyjubjub } from '@noble/curves/misc';
 import { bn254 } from '@taceo/poseidon2';
+import {
+  babyjubjub,
+  BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE,
+  Fq,
+  Fr,
+} from './babyjubjub.js';
 
 const DLOG_DS = 'DLOG Equality Proof';
 
-const Fp = babyjubjub.Point.Fp;
-const Fn = babyjubjub.Point.Fn;
 const ZERO = 0n;
-
-/** BabyJubJub subgroup order (scalar modulus r). */
-export const SCALAR_ORDER = babyjubjub.Point.CURVE().n;
 
 /** Chaum-Pedersen proof: challenge e (base field), response s (scalar). */
 export interface DLogEqualityProof {
@@ -42,17 +42,17 @@ function getDlogDs(): bigint {
   for (let i = 0; i < bytes.length; i++) {
     n = n * 256n + BigInt(bytes[i]!);
   }
-  cachedDlogDs = n % Fp.ORDER;
+  cachedDlogDs = n % Fq.ORDER;
   return cachedDlogDs;
 }
 
 /** Map base-field element to scalar (mod r). Equivalent to Rust convert_base_to_scalar. */
-function convertBaseToScalar(f: bigint): bigint {
-  return Fn.create(f);
+export function convertBaseToScalar(f: bigint): bigint {
+  return Fr.create(f);
 }
 
 /** Fiat-Shamir challenge: H(DS, a, b, c, d, r1, r2) via Poseidon2 t16, output state[1]. */
-function challengeHash(
+export function challengeHash(
   a: AffinePoint<bigint>,
   b: AffinePoint<bigint>,
   c: AffinePoint<bigint>,
@@ -82,18 +82,20 @@ function challengeHash(
   return bn254.t16.permutation(state)[1]!;
 }
 
-/** Generator G (BabyJubJub standard base point). */
-const G = babyjubjub.Point.BASE;
+/** Generator G (prime-order subgroup; RUST_GENERATOR_AFFINE). */
+const G = babyjubjub.Point.fromAffine(BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE);
 
-/** Sample uniform random scalar in [0, r) using crypto.getRandomValues. */
+/** Sample uniform random scalar in [0, r) using crypto.getRandomValues.
+ * Oversample to 48 bytes to avoid bias.
+ */
 function randomScalar(): bigint {
-  const bytes = new Uint8Array(32);
+  const bytes = new Uint8Array(48);
   crypto.getRandomValues(bytes);
   let n = ZERO;
-  for (let i = 0; i < 32; i++) {
+  for (let i = 0; i < 48; i++) {
     n = n * 256n + BigInt(bytes[i]!);
   }
-  return Fn.create(n);
+  return Fr.create(n);
 }
 
 /**
@@ -109,7 +111,7 @@ export function dlogEqualityProof(
   x: bigint
 ): DLogEqualityProof {
   const B = babyjubjub.Point.fromAffine(b);
-  const xNorm = Fn.create(x);
+  const xNorm = Fr.create(x);
   const k = randomScalar();
   const R1 = G.multiplyUnsafe(k);
   const R2 = B.multiplyUnsafe(k);
@@ -125,7 +127,7 @@ export function dlogEqualityProof(
     R2.toAffine()
   );
   const eScalar = convertBaseToScalar(e);
-  const s = Fn.create(k + eScalar * xNorm);
+  const s = Fr.create(k + eScalar * xNorm);
   return { e, s };
 }
 
@@ -161,8 +163,7 @@ export function dlogEqualityVerify(
     if (!p.isTorsionFree()) throw new InvalidProofError();
   }
 
-  if (proof.s >= SCALAR_ORDER) throw new InvalidProofError();
-  if (proof.s < 0) throw new InvalidProofError();
+  if (!Fr.isValid(proof.s)) throw new InvalidProofError();
 
   const eScalar = convertBaseToScalar(proof.e);
   const R1Prime = D.multiplyUnsafe(proof.s).subtract(A.multiplyUnsafe(eScalar));
