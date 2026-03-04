@@ -1,6 +1,14 @@
 import { parseArgs } from 'node:util';
 import { distributedOprf, isOprfClientError } from '@taceolabs/oprf-client';
 
+function bytesToFieldBe(bytes: Uint8Array): bigint {
+  let n = 0n;
+  for (let i = 0; i < bytes.length; i++) {
+    n = n * 256n + BigInt(bytes[i]!);
+  }
+  return n;
+}
+
 const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
@@ -24,7 +32,6 @@ Options:
   --module <string>               Module name for the OPRF service (required)
   --threshold <number>            Minimum responses needed (required)
   --query <bigint>                Input value as decimal string (required)
-  --domain-separator <bigint>     Domain separator, default: 0
   --protocol-version <string>     Protocol version, default: 1.0.0
   -h, --help                      Show this help message
 `);
@@ -49,7 +56,9 @@ const services = values['services']!.split(',').map((s) => s.trim());
 const module = values['module']!;
 const threshold = parseInt(values['threshold']!, 10);
 const query = BigInt(values['query']!);
-const domainSeparator = BigInt(values['domain-separator']!);
+const domainSeparator = bytesToFieldBe(
+  new TextEncoder().encode('OPRF TestNet')
+);
 const protocolVersion = values['protocol-version']!;
 
 if (isNaN(threshold) || threshold < 1) {
@@ -67,10 +76,17 @@ console.log(`  Protocol version: ${protocolVersion}`);
 console.log('');
 
 try {
-  const result = await distributedOprf(services, module, threshold, query, domainSeparator, {
-    auth: { api_key: apiKey },
-    protocolVersion,
-  });
+  const result = await distributedOprf(
+    services,
+    module,
+    threshold,
+    query,
+    domainSeparator,
+    {
+      auth: { api_key: apiKey },
+      protocolVersion,
+    }
+  );
 
   console.log('Result:');
   console.log(`  output:         ${result.output}`);
