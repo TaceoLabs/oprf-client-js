@@ -6,11 +6,11 @@
 import type { AffinePoint } from '@noble/curves/abstract/curve';
 import type { PartialDLogEqualityCommitments } from '@taceolabs/oprf-client-core';
 
-/** Affine point as JSON (bigint as string for serialization). */
-export interface AffinePointWire {
-  x: string;
-  y: string;
-}
+/**
+ * Affine point as JSON: a 2-element array [x, y] of decimal strings.
+ * Matches Rust ark_serde_compat::babyjubjub::serialize_affine / deserialize_affine.
+ */
+export type AffinePointWire = [string, string];
 
 /** OPRF public key with epoch (wire shape). */
 export interface OprfPublicKeyWithEpochWire {
@@ -32,7 +32,7 @@ export interface OprfResponseWire {
   oprf_pub_key_with_epoch: OprfPublicKeyWithEpochWire;
 }
 
-/** Per-party commitments (wire shape; points as x,y strings). */
+/** Per-party commitments (wire shape; points as [x, y] string tuples). */
 export interface PartialDLogEqualityCommitmentsWire {
   c: AffinePointWire;
   d1: AffinePointWire;
@@ -41,10 +41,11 @@ export interface PartialDLogEqualityCommitmentsWire {
   e2: AffinePointWire;
 }
 
-/** DLog proof share (wire: single scalar as string). */
-export interface DLogProofShareShamirWire {
-  value: string;
-}
+/**
+ * DLog proof share (wire: transparent scalar string).
+ * Matches Rust DLogProofShareShamir which is #[serde(transparent)] over a scalar field string.
+ */
+export type DLogProofShareShamirWire = string;
 
 /** DLogCommitmentsShamir wire (server expects snake_case: contributing_parties). */
 export interface DLogCommitmentsShamirWire {
@@ -77,11 +78,11 @@ export interface OprfResponse {
 }
 
 export function wireToAffine(w: AffinePointWire): AffinePoint<bigint> {
-  return { x: BigInt(w.x), y: BigInt(w.y) };
+  return { x: BigInt(w[0]), y: BigInt(w[1]) };
 }
 
 export function affineToWire(p: AffinePoint<bigint>): AffinePointWire {
-  return { x: p.x.toString(), y: p.y.toString() };
+  return [p.x.toString(), p.y.toString()];
 }
 
 export function wireToCommitments(
@@ -122,13 +123,13 @@ export function wireToOprfResponse(w: OprfResponseWire): OprfResponse {
 export function wireToProofShare(w: DLogProofShareShamirWire): {
   value: bigint;
 } {
-  return { value: BigInt(w.value) };
+  return { value: BigInt(w) };
 }
 
 export function proofShareToWire(p: {
   value: bigint;
 }): DLogProofShareShamirWire {
-  return { value: p.value.toString() };
+  return p.value.toString();
 }
 
 /** Convert DLogCommitmentsShamir (data) to wire shape for server. */

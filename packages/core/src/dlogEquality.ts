@@ -12,6 +12,7 @@ import {
   BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE,
   Fq,
   Fr,
+  randomScalar,
 } from './babyjubjub.js';
 
 const DLOG_DS = 'DLOG Equality Proof';
@@ -84,19 +85,6 @@ export function challengeHash(
 
 /** Generator G (prime-order subgroup; RUST_GENERATOR_AFFINE). */
 const G = babyjubjub.Point.fromAffine(BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE);
-
-/** Sample uniform random scalar in [0, r) using crypto.getRandomValues.
- * Oversample to 48 bytes to avoid bias.
- */
-function randomScalar(): bigint {
-  const bytes = new Uint8Array(48);
-  crypto.getRandomValues(bytes);
-  let n = ZERO;
-  for (let i = 0; i < 48; i++) {
-    n = n * 256n + BigInt(bytes[i]!);
-  }
-  return Fr.create(n);
-}
 
 /**
  * Create a Chaum-Pedersen proof that C = x·B and A = x·D share the same dlog x.

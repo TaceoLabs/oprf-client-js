@@ -14,6 +14,7 @@ import {
   babyJubJubAffineToCompressedBytes,
   Fr,
   G,
+  randomScalar,
 } from './babyjubjub.js';
 
 const FROST_2_NONCE_COMBINER_LABEL = new TextEncoder().encode(
@@ -49,17 +50,6 @@ export interface DLogEqualitySession {
   readonly blindedQuery: AffinePoint<bigint>;
 }
 
-/** Sample scalar in [0, order) for session randomness (prime field). */
-function randomScalarInOrder(order: bigint): bigint {
-  const bytes = new Uint8Array(48);
-  crypto.getRandomValues(bytes);
-  let n = 0n;
-  for (let i = 0; i < 48; i++) {
-    n = n * 256n + BigInt(bytes[i]!);
-  }
-  return n % order;
-}
-
 /** Parse UUID string to 16 raw bytes (same order as Rust Uuid::as_bytes()). */
 function uuidToBytes(sessionId: string): Uint8Array {
   const hex = sessionId.replace(/-/g, '');
@@ -92,8 +82,8 @@ export function partialCommitments(
 } {
   const B = babyjubjub.Point.fromAffine(b);
   const xNorm = Fr.create(xShare);
-  const dShare = randomScalarInOrder(Fr.ORDER);
-  const eShare = randomScalarInOrder(Fr.ORDER);
+  const dShare = randomScalar();
+  const eShare = randomScalar();
   const d1 = G.multiplyUnsafe(dShare).toAffine();
   const e1 = G.multiplyUnsafe(eShare).toAffine();
   const d2 = B.multiplyUnsafe(dShare).toAffine();

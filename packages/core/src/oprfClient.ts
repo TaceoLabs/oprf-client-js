@@ -1,6 +1,6 @@
 import type { AffinePoint } from '@noble/curves/abstract/curve';
 import { encodeToCurve } from './encodeToCurve.js';
-import { Fr, babyjubjub } from './babyjubjub.js';
+import { Fr, babyjubjub, randomScalar } from './babyjubjub.js';
 import { bn254 } from '@taceo/poseidon2';
 
 /** Blinding factor (scalar in Fr). Use randomBlindingFactor() or prepareBlindingFactor for unblinding. */
@@ -11,13 +11,7 @@ export type PreparedBlindingFactor = bigint;
 
 /** Sample a random blinding factor in Fr (non-zero). */
 export function randomBlindingFactor(): BlindingFactor {
-  const bytes = new Uint8Array(48);
-  crypto.getRandomValues(bytes);
-  let n = 0n;
-  for (let i = 0; i < 48; i++) {
-    n = n * 256n + BigInt(bytes[i]!);
-  }
-  const beta = Fr.create(n);
+  const beta = randomScalar();
   if (beta === 0n) return randomBlindingFactor();
   return beta;
 }

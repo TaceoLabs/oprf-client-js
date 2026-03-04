@@ -1,6 +1,7 @@
 import { babyjubjub } from '@noble/curves/misc';
 import { Field } from '@noble/curves/abstract/modular';
 import { AffinePoint } from '@noble/curves/abstract/curve';
+import { randomBytes } from '@noble/hashes/utils';
 
 const CURVE_N = babyjubjub.Point.CURVE().n;
 const COFACTOR = 8n;
@@ -62,4 +63,17 @@ export function babyJubJubAffineToCompressedBytes(
   const flag = compareLE(xBytes, negXBytes) ? 1 : 0;
   yBytes[BYTES - 1] = (yBytes[BYTES - 1]! & 0x7f) | (flag << 7);
   return yBytes;
+}
+
+/** Sample uniform random scalar in [0, r) using crypto.getRandomValues.
+ * Oversample to 48 bytes to avoid bias.
+ */
+export function randomScalar(): bigint {
+  const bytes = randomBytes(48);
+  let n = 0n;
+  for (let i = 0; i < 48; i++) {
+    n = n * 256n + BigInt(bytes[i]!);
+  }
+  Fr.fromBytes(bytes);
+  return Fr.create(n);
 }
