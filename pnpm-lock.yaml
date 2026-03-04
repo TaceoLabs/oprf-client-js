@@ -60,7 +60,7 @@ importers:
 
   packages/example:
     dependencies:
-      '@taceolabs/oprf-client':
+      '@taceo/oprf-client':
         specifier: workspace:*
         version: link:../oprf-client
     devDependencies:
@@ -76,7 +76,7 @@ importers:
       '@noble/curves':
         specifier: ^1.9.7
         version: 1.9.7
-      '@taceolabs/oprf-client-core':
+      '@taceo/oprf-client-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

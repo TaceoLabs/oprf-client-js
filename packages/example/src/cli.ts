@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { distributedOprf, isOprfClientError } from '@taceolabs/oprf-client';
+import { distributedOprf, isOprfClientError } from '@taceo/oprf-client';
 
 function bytesToFieldBe(bytes: Uint8Array): bigint {
   let n = 0n;

@@ -1,5 +1,5 @@
 {
-  "name": "@taceolabs/oprf-example",
+  "name": "@taceo/oprf-example",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,7 +7,7 @@
     "start": "tsx src/cli.ts"
   },
   "dependencies": {
-    "@taceolabs/oprf-client": "workspace:*"
+    "@taceo/oprf-client": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.2",
