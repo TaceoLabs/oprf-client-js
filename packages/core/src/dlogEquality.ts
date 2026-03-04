@@ -21,8 +21,8 @@ const ZERO = 0n;
 
 /** Chaum-Pedersen proof: challenge e (base field), response s (scalar). */
 export interface DLogEqualityProof {
-  e: bigint;
-  s: bigint;
+  readonly e: bigint;
+  readonly s: bigint;
 }
 
 /** Thrown when proof verification fails. */

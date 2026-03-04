@@ -23,21 +23,21 @@ const FROST_2_NONCE_COMBINER_LABEL = new TextEncoder().encode(
 
 /** Per-party commitments (c, d1, d2, e1, e2). */
 export interface PartialDLogEqualityCommitments {
-  c: AffinePoint<bigint>;
-  d1: AffinePoint<bigint>;
-  d2: AffinePoint<bigint>;
-  e1: AffinePoint<bigint>;
-  e2: AffinePoint<bigint>;
+  readonly c: AffinePoint<bigint>;
+  readonly d1: AffinePoint<bigint>;
+  readonly d2: AffinePoint<bigint>;
+  readonly e1: AffinePoint<bigint>;
+  readonly e2: AffinePoint<bigint>;
 }
 
 /** Aggregated commitments + contributing party IDs. */
 export interface DLogEqualityCommitmentsData {
-  c: AffinePoint<bigint>;
-  d1: AffinePoint<bigint>;
-  d2: AffinePoint<bigint>;
-  e1: AffinePoint<bigint>;
-  e2: AffinePoint<bigint>;
-  contributingParties: number[];
+  readonly c: AffinePoint<bigint>;
+  readonly d1: AffinePoint<bigint>;
+  readonly d2: AffinePoint<bigint>;
+  readonly e1: AffinePoint<bigint>;
+  readonly e2: AffinePoint<bigint>;
+  readonly contributingParties: number[];
 }
 
 /** Proof share (scalar). */

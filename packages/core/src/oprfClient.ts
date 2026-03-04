@@ -11,8 +11,10 @@ export type PreparedBlindingFactor = bigint;
 
 /** Sample a random blinding factor in Fr (non-zero). */
 export function randomBlindingFactor(): BlindingFactor {
-  const beta = randomScalar();
-  if (beta === 0n) return randomBlindingFactor();
+  let beta: bigint;
+  do {
+    beta = randomScalar();
+  } while (beta === 0n);
   return beta;
 }
 

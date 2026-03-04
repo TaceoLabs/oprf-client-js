@@ -1,6 +1,29 @@
 {
-  "name": "@taceolabs/oprf-client-core",
+  "name": "@taceo/oprf-client-core",
   "version": "0.0.0",
+  "description": "Threshold OPRF client core: BabyJubJub, hash-to-curve, Chaum-Pedersen ZKP, FROST-style distributed proofs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaceoLabs/oprf-client-js",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "oprf",
+    "babyjubjub",
+    "zkp",
+    "threshold",
+    "chaum-pedersen",
+    "frost",
+    "cryptography"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

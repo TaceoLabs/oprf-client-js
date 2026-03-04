@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { VERSION, encodeToCurve } from '../src/index.js';
-
-describe('core', () => {
-  it('exports VERSION', () => {
-    expect(VERSION).toBe('0.0.0');
-  });
-});
+import { encodeToCurve } from '../src/index.js';
 
 describe('encodeToCurve', () => {
   const expectedX =

@@ -48,7 +48,7 @@ function select<T>(lhs: T, rhs: T, choice: boolean): T {
 /** True iff x is a square (Legendre symbol 0 or 1). */
 function isSquare(x: bigint): boolean {
   const v = FpLegendre(Fp, x);
-  return v == 0 || v == 1;
+  return v === 0 || v === 1;
 }
 
 /** Inverse mod p, or 0 if x === 0. */
