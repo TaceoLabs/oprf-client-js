@@ -74,6 +74,5 @@ export function randomScalar(): bigint {
   for (let i = 0; i < 48; i++) {
     n = n * 256n + BigInt(bytes[i]!);
   }
-  Fr.fromBytes(bytes);
   return Fr.create(n);
 }

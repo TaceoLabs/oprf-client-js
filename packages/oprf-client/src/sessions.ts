@@ -97,6 +97,18 @@ export async function initSessions<Auth>(
     bucket.oprfPublicKeys.push(
       oprfPublicKeyToAffine(response.oprf_pub_key_with_epoch)
     );
+
+    if (bucket.ws.length >= threshold) {
+      // close other sessions that we won't use
+      for (let j = i + 1; j < results.length; j++) {
+        const r2 = results[j];
+        if (r2.status === 'rejected') {
+          continue;
+        }
+        r2.value?.session.close();
+      }
+      break;
+    }
   }
 
   for (const [epoch, bucket] of epochMap) {
