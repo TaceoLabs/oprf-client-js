@@ -2,7 +2,7 @@
  * Poseidon2 over BN254 scalar field.
  * Compatible with HorizenLabs parameter script and the Rust taceo-poseidon2 crate.
  *
- * Usage: import { bn254 } from '@taceolabs/poseidon2'
+ * Usage: import { bn254 } from '@taceo/poseidon2'
  *   bn254.t4.permutation(state)
  *   bn254.t4.permutationInPlace(state)
  */

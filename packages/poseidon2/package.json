@@ -1,6 +1,28 @@
 {
   "name": "@taceo/poseidon2",
   "version": "0.2.0",
+  "description": "Poseidon2 hash function over the BN254 scalar field (state sizes t=2,3,4,8,12,16)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaceoLabs/oprf-client-js",
+    "directory": "packages/poseidon2"
+  },
+  "keywords": [
+    "poseidon2",
+    "bn254",
+    "hash",
+    "zk",
+    "cryptography",
+    "sponge"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
