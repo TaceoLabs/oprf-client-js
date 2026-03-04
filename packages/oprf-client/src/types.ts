@@ -4,7 +4,7 @@
  */
 
 import type { AffinePoint } from '@noble/curves/abstract/curve';
-import type { PartialDLogEqualityCommitments } from '@taceolabs/oprf-client-core';
+import type { PartialDLogEqualityCommitments } from '@taceo/oprf-client-core';
 
 /**
  * Affine point as JSON: a 2-element array [x, y] of decimal strings.
@@ -14,31 +14,31 @@ export type AffinePointWire = [string, string];
 
 /** OPRF public key with epoch (wire shape). */
 export interface OprfPublicKeyWithEpochWire {
-  key: AffinePointWire;
-  epoch: number;
+  readonly key: AffinePointWire;
+  readonly epoch: number;
 }
 
 /** Client request sent to server (wire shape). */
 export interface OprfRequestWire<Auth = unknown> {
-  request_id: string;
-  blinded_query: AffinePointWire;
-  auth: Auth;
+  readonly request_id: string;
+  readonly blinded_query: AffinePointWire;
+  readonly auth: Auth;
 }
 
 /** Server response (wire shape). */
 export interface OprfResponseWire {
-  commitments: PartialDLogEqualityCommitmentsWire;
-  party_id: number;
-  oprf_pub_key_with_epoch: OprfPublicKeyWithEpochWire;
+  readonly commitments: PartialDLogEqualityCommitmentsWire;
+  readonly party_id: number;
+  readonly oprf_pub_key_with_epoch: OprfPublicKeyWithEpochWire;
 }
 
 /** Per-party commitments (wire shape; points as [x, y] string tuples). */
 export interface PartialDLogEqualityCommitmentsWire {
-  c: AffinePointWire;
-  d1: AffinePointWire;
-  d2: AffinePointWire;
-  e1: AffinePointWire;
-  e2: AffinePointWire;
+  readonly c: AffinePointWire;
+  readonly d1: AffinePointWire;
+  readonly d2: AffinePointWire;
+  readonly e1: AffinePointWire;
+  readonly e2: AffinePointWire;
 }
 
 /**

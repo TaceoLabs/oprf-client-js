@@ -1,6 +1,28 @@
 {
-  "name": "@taceolabs/oprf-client",
+  "name": "@taceo/oprf-client",
   "version": "0.0.0",
+  "description": "WebSocket client for distributed threshold OPRF over a network of service nodes",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaceoLabs/oprf-client-js",
+    "directory": "packages/oprf-client"
+  },
+  "keywords": [
+    "oprf",
+    "threshold",
+    "websocket",
+    "distributed",
+    "cryptography",
+    "zkp"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -29,7 +51,7 @@
   },
   "dependencies": {
     "@noble/curves": "^1.9.7",
-    "@taceolabs/oprf-client-core": "workspace:*"
+    "@taceo/oprf-client-core": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

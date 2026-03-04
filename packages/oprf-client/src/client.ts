@@ -14,7 +14,7 @@ import {
   type BlindingFactor,
   type DLogEqualityProof,
   type DLogProofShareShamir,
-} from '@taceolabs/oprf-client-core';
+} from '@taceo/oprf-client-core';
 import type { AffinePoint } from '@noble/curves/abstract/curve';
 import { OprfClientError } from './errors.js';
 import type { OprfSessions } from './sessions.js';

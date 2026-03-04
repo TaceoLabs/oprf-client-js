@@ -3,7 +3,7 @@
  * Connects to /api/{module}/oprf, sends/receives JSON messages, handles close frames.
  */
 
-import { OprfClientError, OPRF_ERROR_CODES } from './errors.js';
+import { OprfClientError } from './errors.js';
 import type { OprfResponseWire } from './types.js';
 import { wireToOprfResponse } from './types.js';
 import type { OprfResponse } from './types.js';
@@ -77,16 +77,11 @@ export class WebSocketSession {
   }
 
   /** Send a JSON-serializable message as text frame. */
-  async send<T extends object>(msg: T): Promise<void> {
-    const data = JSON.stringify(msg);
-    return new Promise((resolve, reject) => {
-      this.ws.send(data);
-      if (this.ws.readyState === WebSocket.OPEN) {
-        resolve();
-      } else {
-        reject(new OprfClientError('WsError', 'WebSocket not open'));
-      }
-    });
+  send<T extends object>(msg: T): void {
+    if (this.ws.readyState !== WebSocket.OPEN) {
+      throw new OprfClientError('WsError', 'WebSocket not open');
+    }
+    this.ws.send(JSON.stringify(msg));
   }
 
   /**
@@ -112,18 +107,9 @@ export class WebSocketSession {
         cleanup();
         if (event.code !== 1000 && event.code !== 1005) {
           const reason = event.reason || `Close code ${event.code}`;
-          if (
-            event.code === OPRF_ERROR_CODES.TIMEOUT ||
-            event.code === OPRF_ERROR_CODES.BAD_REQUEST
-          ) {
-            reject(
-              new OprfClientError('ServerError', reason, { code: event.code })
-            );
-          } else {
-            reject(
-              new OprfClientError('ServerError', reason, { code: event.code })
-            );
-          }
+          reject(
+            new OprfClientError('ServerError', reason, { code: event.code })
+          );
         } else {
           reject(new OprfClientError('Eof', 'Connection closed'));
         }
@@ -160,8 +146,8 @@ export class WebSocketSession {
   }
 
   /** Send challenge (DLogCommitmentsShamir wire). */
-  async sendChallenge(wire: DLogCommitmentsShamirWire): Promise<void> {
-    return this.send(wire);
+  sendChallenge(wire: DLogCommitmentsShamirWire): void {
+    this.send(wire);
   }
 
   /** Gracefully close with normal code. */

@@ -1,5 +1,5 @@
 /**
- * @taceolabs/oprf-client – WebSocket client for TACEO OPRF service.
+ * @taceo/oprf-client – WebSocket client for TACEO OPRF service.
  */
 
 export {

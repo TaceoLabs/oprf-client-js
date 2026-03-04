@@ -7,7 +7,7 @@ import {
   DLogCommitmentsShamir,
   type PartialDLogCommitmentsShamir,
   type DLogProofShareShamir,
-} from '@taceolabs/oprf-client-core';
+} from '@taceo/oprf-client-core';
 import { OprfClientError } from './errors.js';
 import type { OprfRequest, OprfPublicKeyWithEpoch } from './types.js';
 import { affineToWire, challengeToWire } from './types.js';
@@ -89,6 +89,7 @@ export async function initSessions<Auth>(
       epochMap.set(epoch, bucket);
     }
     if (bucket.partyIds.includes(response.party_id)) {
+      session.close();
       continue;
     }
     bucket.ws.push(session);
@@ -113,6 +114,11 @@ export async function initSessions<Auth>(
 
   for (const [epoch, bucket] of epochMap) {
     if (bucket.ws.length >= threshold) {
+      for (const [otherEpoch, otherBucket] of epochMap) {
+        if (otherEpoch !== epoch) {
+          for (const ws of otherBucket.ws) ws.close();
+        }
+      }
       const order = bucket.partyIds
         .map((id, i) => ({ id, i }))
         .sort((a, b) => a.id - b.id);
