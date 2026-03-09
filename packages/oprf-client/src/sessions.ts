@@ -7,7 +7,7 @@ import {
   DLogCommitmentsShamir,
   type PartialDLogCommitmentsShamir,
   type DLogProofShareShamir,
-} from '@taceo/oprf-client-core';
+} from '@taceo/oprf-core';
 import { OprfClientError } from './errors.js';
 import type { OprfRequest, OprfPublicKeyWithEpoch } from './types.js';
 import { affineToWire, challengeToWire } from './types.js';

@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@noble/curves": "^1.9.7",
-    "@taceo/oprf-client-core": "workspace:*"
+    "@taceo/oprf-core": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

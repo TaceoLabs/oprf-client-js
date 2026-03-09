@@ -9,8 +9,8 @@ import {
   DLogCommitmentsShamir,
   partialCommitments,
   type PartialDLogCommitmentsShamir,
-} from '@taceo/oprf-client-core';
-import { encodeToCurve } from '@taceo/oprf-client-core';
+} from '@taceo/oprf-core';
+import { encodeToCurve } from '@taceo/oprf-core';
 
 describe('oprf-client', () => {
   it('isOprfClientError identifies OprfClientError', () => {

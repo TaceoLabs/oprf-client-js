@@ -4,7 +4,7 @@
  */
 
 import type { AffinePoint } from '@noble/curves/abstract/curve';
-import type { PartialDLogEqualityCommitments } from '@taceo/oprf-client-core';
+import type { PartialDLogEqualityCommitments } from '@taceo/oprf-core';
 
 /**
  * Affine point as JSON: a 2-element array [x, y] of decimal strings.
