@@ -16,7 +16,12 @@ import {
   type DLogProofShareShamir,
 } from '@taceo/oprf-core';
 import type { AffinePoint } from '@noble/curves/abstract/curve.js';
-import { OprfClientError } from './errors.js';
+import {
+  OprfClientError,
+  aggregateError,
+  isNodeError,
+  type NodeError,
+} from './errors.js';
 import type { OprfSessions } from './sessions.js';
 import { initSessions, finishSessions } from './sessions.js';
 
@@ -80,39 +85,45 @@ export function verifyDlogEquality(
 }
 
 export interface DistributedOprfOptions<Auth = unknown> {
-  /** Protocol version for WebSocket query param (default "1.0.0"). */
-  protocolVersion?: string;
   /** Auth payload sent in OprfRequest (must be JSON-serializable). */
   auth?: Auth;
 }
 
 /**
  * Full distributed OPRF: blind → init sessions → challenge → finish → verify → unblind → finalize.
+ * Services must be pre-built WS URLs (use toOprfUri / toOprfUriMany).
  */
 export async function distributedOprf(
   services: string[],
-  module: string,
   threshold: number,
   query: bigint,
   domainSeparator: bigint,
   options: DistributedOprfOptions = {}
 ): Promise<VerifiableOprfOutput> {
+  if (new Set(services).size !== services.length) {
+    throw new OprfClientError('NonUniqueServices', 'Services must be unique');
+  }
+
   const blindingFactor: BlindingFactor = randomBlindingFactor();
   const blindedRequest = blindQuery(query, blindingFactor);
 
   const requestId = crypto.randomUUID();
   const auth = options.auth ?? ({} as unknown);
-  const sessions = await initSessions(
-    services,
-    module,
-    threshold,
-    {
+
+  let sessions: OprfSessions;
+  try {
+    sessions = await initSessions(services, threshold, {
       request_id: requestId,
       blinded_query: blindedRequest,
       auth,
-    },
-    { protocolVersion: options.protocolVersion }
-  );
+    });
+  } catch (err) {
+    // initSessions throws NodeError[] on threshold failure
+    if (Array.isArray(err) && err.every(isNodeError)) {
+      throw aggregateError(threshold, err as NodeError[]);
+    }
+    throw err;
+  }
 
   const firstKey = sessions.oprfPublicKeys[0]!;
   for (const key of sessions.oprfPublicKeys) {
@@ -126,7 +137,21 @@ export async function distributedOprf(
   const oprfPublicKey = firstKey;
 
   const challenge = generateChallengeRequest(sessions);
-  const proofShares = await finishSessions(sessions, challenge);
+
+  let proofShares: DLogProofShareShamir[];
+  try {
+    proofShares = await finishSessions(sessions, challenge);
+  } catch (err) {
+    // finishSessions throws NodeError (from ws methods)
+    if (isNodeError(err)) {
+      throw new OprfClientError(
+        'CannotFinishSession',
+        `Failed to finish session: ${err.message}`,
+        { cause: err }
+      );
+    }
+    throw err;
+  }
 
   const dlogProof = verifyDlogEquality(
     requestId,

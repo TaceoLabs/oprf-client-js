@@ -1,6 +1,6 @@
 /**
- * Session management: init_sessions (parallel connect, collect by epoch to threshold),
- * finish_sessions (send challenge, collect proof shares). Mirrors Rust oprf-client sessions.
+ * Session management: initSessions (parallel connect, collect by epoch to threshold),
+ * finishSessions (send challenge, collect proof shares). Mirrors Rust oprf-client sessions.
  */
 
 import {
@@ -8,7 +8,7 @@ import {
   type PartialDLogCommitmentsShamir,
   type DLogProofShareShamir,
 } from '@taceo/oprf-core';
-import { OprfClientError } from './errors.js';
+import { NodeError } from './errors.js';
 import type { OprfRequest, OprfPublicKeyWithEpoch } from './types.js';
 import { affineToWire, challengeToWire } from './types.js';
 import { WebSocketSession } from './ws.js';
@@ -33,21 +33,15 @@ function oprfPublicKeyToAffine(k: OprfPublicKeyWithEpoch): AffinePointLike {
 
 /**
  * Open WebSockets to each service in parallel, send oprfRequest, collect OprfResponse.
+ * Services must be pre-built WS URLs (see toOprfUri / toOprfUriMany).
  * Group by epoch; when an epoch has >= threshold responses with distinct party_id, return those sessions (sorted by party_id).
- * Fails with NotEnoughOprfResponses if threshold not met.
+ * On failure: throws NodeError[] (caller wraps via aggregateError).
  */
 export async function initSessions<Auth>(
   services: string[],
-  module: string,
   threshold: number,
-  oprfRequest: OprfRequest<Auth>,
-  config: { protocolVersion?: string } = {}
+  oprfRequest: OprfRequest<Auth>
 ): Promise<OprfSessions> {
-  const dedup = [...new Set(services)].sort();
-  if (dedup.length !== services.length) {
-    throw new OprfClientError('NonUniqueServices', 'Services must be unique');
-  }
-
   const requestWire = {
     request_id: oprfRequest.request_id,
     blinded_query: affineToWire(oprfRequest.blinded_query),
@@ -55,8 +49,8 @@ export async function initSessions<Auth>(
   };
 
   const results = await Promise.allSettled(
-    dedup.map(async (service) => {
-      const session = await WebSocketSession.connect(service, module, config);
+    services.map(async (service) => {
+      const session = await WebSocketSession.connect(service);
       await session.send(requestWire);
       const response = await session.readOprfResponse();
       return { session, response };
@@ -72,13 +66,23 @@ export async function initSessions<Auth>(
       oprfPublicKeys: AffinePointLike[];
     }
   >();
-  const errors = new Map<string, unknown>();
+  const nodeErrors: NodeError[] = [];
 
   for (let i = 0; i < results.length; i++) {
-    const service = dedup[i]!;
     const r = results[i]!;
     if (r.status === 'rejected') {
-      errors.set(service, r.reason);
+      // NodeError thrown from ws methods; wrap unknown errors
+      const err = r.reason;
+      if (err && err instanceof NodeError) {
+        nodeErrors.push(err);
+      } else {
+        nodeErrors.push(
+          new NodeError('Unknown', {
+            reason: String(err),
+            cause: err instanceof Error ? err : undefined,
+          })
+        );
+      }
       continue;
     }
     const { session, response } = r.value;
@@ -103,10 +107,10 @@ export async function initSessions<Auth>(
       // close other sessions that we won't use
       for (let j = i + 1; j < results.length; j++) {
         const r2 = results[j];
-        if (r2.status === 'rejected') {
+        if (r2?.status === 'rejected') {
           continue;
         }
-        r2.value?.session.close();
+        r2?.value?.session.close();
       }
       break;
     }
@@ -132,16 +136,14 @@ export async function initSessions<Auth>(
     }
   }
 
-  throw new OprfClientError(
-    'NotEnoughOprfResponses',
-    `Could not reach ${threshold} responses`,
-    { errors: Object.fromEntries(errors) }
-  );
+  // Not enough responses — throw collected node errors for caller to aggregate
+  throw nodeErrors;
 }
 
 /**
  * Send the same challenge to each session, read proof share, then close.
  * Returns proof shares in the same order as sessions.ws.
+ * Errors bubble up as NodeError (thrown from ws methods).
  */
 export async function finishSessions(
   sessions: OprfSessions,
