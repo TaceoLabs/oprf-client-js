@@ -61,7 +61,6 @@ const query = BigInt(values['query']!);
 const domainSeparator = bytesToFieldBe(
   new TextEncoder().encode('OPRF TestNet')
 );
-const protocolVersion = values['protocol-version']!;
 
 if (isNaN(threshold) || threshold < 1) {
   console.error('Error: --threshold must be a positive integer');
