@@ -13,11 +13,6 @@ import { wireToProofShare, type DLogProofShareShamirWire } from './types.js';
 /** Default protocol version sent to server (query param; browser cannot set headers). */
 export const DEFAULT_PROTOCOL_VERSION = '1.0.0';
 
-export interface WebSocketSessionConfig {
-  /** Protocol version (sent as query param ?version=). */
-  protocolVersion?: string;
-}
-
 /**
  * Thin WebSocket session: connect, send JSON, receive JSON, handle close.
  * Uses text (JSON) frames. Browser WebSocket cannot set headers; version is sent as query param.
