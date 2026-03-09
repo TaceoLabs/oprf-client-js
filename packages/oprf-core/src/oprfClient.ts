@@ -1,4 +1,4 @@
-import type { AffinePoint } from '@noble/curves/abstract/curve';
+import type { AffinePoint } from '@noble/curves/abstract/curve.js';
 import { encodeToCurve } from './encodeToCurve.js';
 import { Fr, babyjubjub, randomScalar } from './babyjubjub.js';
 import { bn254 } from '@taceo/poseidon2';

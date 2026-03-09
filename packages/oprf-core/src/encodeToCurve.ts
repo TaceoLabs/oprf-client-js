@@ -3,9 +3,9 @@
  * Based on [mappings.rs](https://github.com/TaceoLabs/...) and [RFC9380](https://www.rfc-editor.org/rfc/rfc9380.html).
  */
 
-import { FpLegendre } from '@noble/curves/abstract/modular';
-import { bn254_Fr } from '@noble/curves/bn254';
-import { babyjubjub } from '@noble/curves/misc';
+import { FpLegendre } from '@noble/curves/abstract/modular.js';
+import { bn254_Fr } from '@noble/curves/bn254.js';
+import { babyjubjub } from '@noble/curves/misc.js';
 import { bn254 } from '@taceo/poseidon2';
 
 const HASH_TO_FIELD_DS = 'OPRF_HashToField_BabyJubJub';

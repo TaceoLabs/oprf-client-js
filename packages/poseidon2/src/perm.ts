@@ -3,7 +3,7 @@
  * Based on https://eprint.iacr.org/2023/323 and the Rust crate poseidon2.
  */
 
-import type { IField } from '@noble/curves/abstract/modular';
+import type { IField } from '@noble/curves/abstract/modular.js';
 
 export type Fr = bigint;
 

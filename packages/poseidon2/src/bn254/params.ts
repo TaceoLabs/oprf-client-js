@@ -4,7 +4,7 @@
  * Do not copy constants by hand; run the script after any Rust param changes.
  */
 
-import type { IField } from '@noble/curves/abstract/modular';
+import type { IField } from '@noble/curves/abstract/modular.js';
 import type { Poseidon2Params } from '../perm.js';
 import {
   T2_MAT,

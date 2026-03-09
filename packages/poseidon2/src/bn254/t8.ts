@@ -1,4 +1,4 @@
-import { bn254_Fr } from '@noble/curves/bn254';
+import { bn254_Fr } from '@noble/curves/bn254.js';
 import {
   permutation as perm,
   permutationInPlace as permInPlace,

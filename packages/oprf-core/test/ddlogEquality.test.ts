@@ -13,9 +13,9 @@ import {
 } from '../src/index.js';
 import { babyJubJubAffineToCompressedBytes } from '../src/babyjubjub.js';
 import { challengeHash } from '../src/dlogEquality.js';
-import { blake3 } from '@noble/hashes/blake3';
-import { bn254_Fr } from '@noble/curves/bn254';
-import { babyjubjub } from '@noble/curves/misc';
+import { blake3 } from '@noble/hashes/blake3.js';
+import { bn254_Fr } from '@noble/curves/bn254.js';
+import { babyjubjub } from '@noble/curves/misc.js';
 import { bn254 } from '@taceo/poseidon2';
 
 function randomScalar(): bigint {

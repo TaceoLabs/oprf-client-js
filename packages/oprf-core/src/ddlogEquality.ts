@@ -4,8 +4,8 @@
  * Matches nullifier-oracle-service oprf-core/src/ddlog_equality.rs.
  */
 
-import { AffinePoint } from '@noble/curves/abstract/curve';
-import { blake3 } from '@noble/hashes/blake3';
+import { AffinePoint } from '@noble/curves/abstract/curve.js';
+import { blake3 } from '@noble/hashes/blake3.js';
 import { challengeHash } from './dlogEquality.js';
 import type { DLogEqualityProof } from './dlogEquality.js';
 import {

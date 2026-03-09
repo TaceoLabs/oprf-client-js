@@ -3,7 +3,7 @@
  * Matches nullifier-oracle-service oprf-types (OprfRequest, OprfResponse, etc.).
  */
 
-import type { AffinePoint } from '@noble/curves/abstract/curve';
+import type { AffinePoint } from '@noble/curves/abstract/curve.js';
 import type { PartialDLogEqualityCommitments } from '@taceo/oprf-core';
 
 /**

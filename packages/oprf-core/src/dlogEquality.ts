@@ -4,8 +4,8 @@
  * Matches nullifier-oracle-service oprf-core/src/dlog_equality.rs.
  */
 
-import { AffinePoint } from '@noble/curves/abstract/curve';
-import { bn254_Fr } from '@noble/curves/bn254';
+import { AffinePoint } from '@noble/curves/abstract/curve.js';
+import { bn254_Fr } from '@noble/curves/bn254.js';
 import { bn254 } from '@taceo/poseidon2';
 import {
   babyjubjub,

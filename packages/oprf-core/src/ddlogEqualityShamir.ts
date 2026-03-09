@@ -3,7 +3,7 @@
  * Matches nullifier-oracle-service oprf-core/src/ddlog_equality/shamir.rs.
  */
 
-import { AffinePoint } from '@noble/curves/abstract/curve';
+import { AffinePoint } from '@noble/curves/abstract/curve.js';
 import {
   combineProofs as combineProofsCore,
   combineTwoNonceRandomness,

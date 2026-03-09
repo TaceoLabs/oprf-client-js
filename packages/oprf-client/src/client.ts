@@ -15,7 +15,7 @@ import {
   type DLogEqualityProof,
   type DLogProofShareShamir,
 } from '@taceo/oprf-core';
-import type { AffinePoint } from '@noble/curves/abstract/curve';
+import type { AffinePoint } from '@noble/curves/abstract/curve.js';
 import { OprfClientError } from './errors.js';
 import type { OprfSessions } from './sessions.js';
 import { initSessions, finishSessions } from './sessions.js';

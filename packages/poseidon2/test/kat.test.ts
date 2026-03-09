@@ -3,8 +3,8 @@
  * Converted from the Rust crate poseidon2/src/bn254/t*.rs tests.
  */
 import { describe, it, expect } from 'vitest';
-import { bn254_Fr } from '@noble/curves/bn254';
-import { bn254 } from '../src/index';
+import { bn254_Fr } from '@noble/curves/bn254.js';
+import { bn254 } from '../src/index.js';
 
 function fr(n: number | string): bigint {
   return bn254_Fr.create(typeof n === 'string' ? BigInt(n) : BigInt(n));

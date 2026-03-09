@@ -1,14 +1,16 @@
-import { babyjubjub } from '@noble/curves/misc';
-import { Field } from '@noble/curves/abstract/modular';
-import { AffinePoint } from '@noble/curves/abstract/curve';
-import { randomBytes } from '@noble/hashes/utils';
+import { babyjubjub } from '@noble/curves/misc.js';
+import { Field } from '@noble/curves/abstract/modular.js';
+import { AffinePoint } from '@noble/curves/abstract/curve.js';
+import { randomBytes } from '@noble/hashes/utils.js';
 
 const CURVE_N = babyjubjub.Point.CURVE().n;
 const COFACTOR = 8n;
 /** Prime subgroup order so Lagrange denominators (e.g. 2) are invertible. */
 const SUBGROUP_SCALAR_ORDER = CURVE_N / COFACTOR;
-export const Fr = Field(SUBGROUP_SCALAR_ORDER, 249);
-export const Fq = babyjubjub.Point.Fp;
+export const Fr: ReturnType<typeof Field> = Field(SUBGROUP_SCALAR_ORDER, {
+  BITS: 249,
+});
+export const Fq: typeof babyjubjub.Point.Fp = babyjubjub.Point.Fp;
 
 /** Prime-order subgroup generator (matches ark_babyjubjub). */
 export const BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE: AffinePoint<bigint> = {
@@ -16,9 +18,8 @@ export const BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE: AffinePoint<bigint> = {
   y: 16950150798460657717958625567821834550301663161624707787222815936182638968203n,
 };
 
-export const G = babyjubjub.Point.fromAffine(
-  BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE
-);
+export const G: ReturnType<typeof babyjubjub.Point.fromAffine> =
+  babyjubjub.Point.fromAffine(BABYJUBJUB_SUBGROUP_GENERATOR_AFFINE);
 
 export { babyjubjub };
 export type { AffinePoint };

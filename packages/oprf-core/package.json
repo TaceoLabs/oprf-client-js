@@ -51,13 +51,13 @@
     "lint": "eslint src test"
   },
   "dependencies": {
-    "@noble/curves": "^1.9.7",
-    "@noble/hashes": "^1.8.0",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1",
     "@taceo/poseidon2": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.6"
+    "vitest": "^4.0.18"
   }
 }

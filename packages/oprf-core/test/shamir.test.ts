@@ -6,7 +6,7 @@ import {
   reconstruct,
   Fr,
 } from '../src/index.js';
-import { babyjubjub } from '@noble/curves/misc';
+import { babyjubjub } from '@noble/curves/misc.js';
 
 const CURVE_N = babyjubjub.Point.CURVE().n;
 
