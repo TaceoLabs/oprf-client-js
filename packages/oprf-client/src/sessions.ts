@@ -8,7 +8,7 @@ import {
   type PartialDLogCommitmentsShamir,
   type DLogProofShareShamir,
 } from '@taceo/oprf-core';
-import { type NodeError } from './errors.js';
+import { NodeError } from './errors.js';
 import type { OprfRequest, OprfPublicKeyWithEpoch } from './types.js';
 import { affineToWire, challengeToWire } from './types.js';
 import { WebSocketSession } from './ws.js';
@@ -73,12 +73,11 @@ export async function initSessions<Auth>(
     if (r.status === 'rejected') {
       // NodeError thrown from ws methods; wrap unknown errors
       const err = r.reason;
-      if (err && typeof err === 'object' && 'code' in err) {
-        nodeErrors.push(err as NodeError);
+      if (err && err instanceof NodeError) {
+        nodeErrors.push(err);
       } else {
-        const { NodeError: NodeErrorClass } = await import('./errors.js');
         nodeErrors.push(
-          new NodeErrorClass('Unknown', {
+          new NodeError('Unknown', {
             reason: String(err),
             cause: err instanceof Error ? err : undefined,
           })
