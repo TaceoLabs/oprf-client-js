@@ -25,16 +25,16 @@ const services = [
 
 const result = await distributedOprf(
   services,
-  'my-module',     // module name
-  2,               // threshold
-  12345n,          // query
-  0n,              // domain separator
+  'my-module', // module name
+  2, // threshold
+  12345n, // query
+  0n, // domain separator
   { protocolVersion: '1.0.0' }
 );
 
-console.log(result.output);        // OPRF output (bigint)
-console.log(result.dlogProof);     // Chaum-Pedersen proof
-console.log(result.epoch);         // Key epoch from servers
+console.log(result.output); // OPRF output (bigint)
+console.log(result.dlogProof); // Chaum-Pedersen proof
+console.log(result.epoch); // Key epoch from servers
 ```
 
 ### Step-by-Step Protocol
@@ -59,12 +59,11 @@ const beta = randomBlindingFactor();
 const blindedRequest = blindQuery(query, beta);
 
 // 2. Initialize sessions with service nodes
-const sessions = await initSessions(
-  services,
-  module,
-  threshold,
-  { request_id: crypto.randomUUID(), blinded_query: blindedRequest, auth: {} }
-);
+const sessions = await initSessions(services, module, threshold, {
+  request_id: crypto.randomUUID(),
+  blinded_query: blindedRequest,
+  auth: {},
+});
 
 // 3. Generate challenge from commitments
 const challenge = generateChallengeRequest(sessions);
@@ -92,41 +91,41 @@ const output = finalizeOutput(domainSeparator, query, unblinded);
 ### Main Functions
 
 - **`distributedOprf(services, module, threshold, query, domainSeparator, options?): Promise<VerifiableOprfOutput>`**
-  
+
   End-to-end distributed OPRF: blind → init sessions → challenge → finish → verify → unblind → finalize.
 
 - **`initSessions(services, module, threshold, request, options?): Promise<OprfSessions>`**
-  
+
   Connect to service nodes via WebSocket, send blinded query, receive commitments.
 
 - **`finishSessions(sessions, challenge): Promise<DLogProofShareShamir[]>`**
-  
+
   Send challenge to nodes, receive proof shares.
 
 - **`generateChallengeRequest(sessions): DLogCommitmentsShamir`**
-  
+
   Combine commitments from sessions into a challenge request.
 
 - **`verifyDlogEquality(requestId, publicKey, blindedRequest, proofShares, challenge): DLogEqualityProof`**
-  
+
   Combine proof shares and verify the DLog equality proof.
 
 ### Types
 
 ```ts
 interface VerifiableOprfOutput {
-  output: bigint;                      // Final OPRF output
-  dlogProof: DLogEqualityProof;        // Combined Chaum-Pedersen proof
+  output: bigint; // Final OPRF output
+  dlogProof: DLogEqualityProof; // Combined Chaum-Pedersen proof
   blindedRequest: AffinePoint<bigint>; // Client's blinded query
-  blindedResponse: AffinePoint<bigint>;// Combined blinded response
+  blindedResponse: AffinePoint<bigint>; // Combined blinded response
   unblindedResponse: AffinePoint<bigint>;
-  oprfPublicKey: AffinePoint<bigint>;  // Service public key
-  epoch: number;                       // Key epoch
+  oprfPublicKey: AffinePoint<bigint>; // Service public key
+  epoch: number; // Key epoch
 }
 
 interface DistributedOprfOptions<Auth = unknown> {
-  protocolVersion?: string;  // Default "1.0.0"
-  auth?: Auth;               // Auth payload for OprfRequest
+  protocolVersion?: string; // Default "1.0.0"
+  auth?: Auth; // Auth payload for OprfRequest
 }
 ```
 
@@ -165,17 +164,17 @@ try {
 
 ### Error Codes
 
-| Code | Description |
-|------|-------------|
-| `NonUniqueServices` | Duplicate service URLs provided |
-| `NotEnoughOprfResponses` | Fewer than threshold nodes responded |
-| `InvalidDLogProof` | DLog proof verification failed |
+| Code                         | Description                          |
+| ---------------------------- | ------------------------------------ |
+| `NonUniqueServices`          | Duplicate service URLs provided      |
+| `NotEnoughOprfResponses`     | Fewer than threshold nodes responded |
+| `InvalidDLogProof`           | DLog proof verification failed       |
 | `InconsistentOprfPublicKeys` | Nodes returned different public keys |
-| `WsError` | WebSocket connection failed |
-| `ServerError` | Server returned an error response |
-| `UnexpectedMsg` | Unexpected message format |
-| `Eof` | Connection closed unexpectedly |
-| `InvalidUri` | Invalid service URL |
+| `WsError`                    | WebSocket connection failed          |
+| `ServerError`                | Server returned an error response    |
+| `UnexpectedMsg`              | Unexpected message format            |
+| `Eof`                        | Connection closed unexpectedly       |
+| `InvalidUri`                 | Invalid service URL                  |
 
 ## Wire Protocol
 

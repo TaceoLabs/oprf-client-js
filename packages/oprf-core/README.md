@@ -67,10 +67,7 @@ dlogEqualityVerify(proof, publicKey, baseB, responseR, baseG);
 ### Distributed DLog (FROST-style)
 
 ```ts
-import {
-  DLogCommitmentsShamir,
-  DLogSessionShamir,
-} from '@taceo/oprf-core';
+import { DLogCommitmentsShamir, DLogSessionShamir } from '@taceo/oprf-core';
 
 // Combine commitments from multiple parties
 const combined = DLogCommitmentsShamir.combineCommitments(
