@@ -11,7 +11,7 @@ import type { DLogCommitmentsShamirWire } from './types.js';
 import { wireToProofShare, type DLogProofShareShamirWire } from './types.js';
 
 /** Default protocol version sent to server (query param; browser cannot set headers). */
-export const DEFAULT_PROTOCOL_VERSION = '1.0.0';
+export const DEFAULT_CLIENT_VERSION = '0.8.0';
 
 /**
  * Thin WebSocket session: connect, send JSON, receive JSON, handle close.

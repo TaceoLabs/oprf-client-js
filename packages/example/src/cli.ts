@@ -22,7 +22,6 @@ const { values, positionals } = parseArgs({
     threshold: { type: 'string' },
     query: { type: 'string' },
     'domain-separator': { type: 'string', default: '0' },
-    'protocol-version': { type: 'string', default: '1.0.0' },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -36,7 +35,6 @@ Options:
   --module <string>               Module name for the OPRF service (required)
   --threshold <number>            Minimum responses needed (required)
   --query <bigint>                Input value as decimal string (required)
-  --protocol-version <string>     Protocol version, default: 1.0.0
   -h, --help                      Show this help message
 `);
   process.exit(0);
@@ -70,9 +68,7 @@ if (isNaN(threshold) || threshold < 1) {
   process.exit(1);
 }
 
-const services = servicesBases.map((s) =>
-  toOprfUri(s, module, protocolVersion)
-);
+const services = servicesBases.map((s) => toOprfUri(s, module));
 
 console.log('Running distributed OPRF...');
 console.log(`  Services: ${services.join(', ')}`);
@@ -80,7 +76,6 @@ console.log(`  Module: ${module}`);
 console.log(`  Threshold: ${threshold}`);
 console.log(`  Query: ${query}`);
 console.log(`  Domain separator: ${domainSeparator}`);
-console.log(`  Protocol version: ${protocolVersion}`);
 console.log('');
 
 try {

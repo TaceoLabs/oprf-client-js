@@ -120,23 +120,23 @@ describe('aggregateError', () => {
 describe('toOprfUri', () => {
   it('converts http to ws', () => {
     expect(toOprfUri('http://localhost:8080', 'mymod')).toBe(
-      'ws://localhost:8080/api/mymod/oprf?version=1.0.0'
+      'ws://localhost:8080/api/mymod/oprf?version=0.8.0'
     );
   });
 
   it('converts https to wss', () => {
     expect(toOprfUri('https://service.example.com', 'auth')).toBe(
-      'wss://service.example.com/api/auth/oprf?version=1.0.0'
+      'wss://service.example.com/api/auth/oprf?version=0.8.0'
     );
   });
 
   it('trims trailing slash', () => {
     expect(toOprfUri('http://localhost:8080/', 'mod')).toBe(
-      'ws://localhost:8080/api/mod/oprf?version=1.0.0'
+      'ws://localhost:8080/api/mod/oprf?version=0.8.0'
     );
   });
 
-  it('uses custom protocol version', () => {
+  it('uses custom client version', () => {
     expect(toOprfUri('http://localhost', 'mod', '2.0.0')).toBe(
       'ws://localhost/api/mod/oprf?version=2.0.0'
     );
