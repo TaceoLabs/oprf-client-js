@@ -1,6 +1,6 @@
 {
   "name": "@taceo/oprf-core",
-  "version": "0.0.0",
+  "version": "0.4.0",
   "description": "Threshold OPRF client core: BabyJubJub, hash-to-curve, Chaum-Pedersen ZKP, FROST-style distributed proofs",
   "license": "MIT",
   "repository": {
