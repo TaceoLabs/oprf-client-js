@@ -1,5 +1,9 @@
 import { parseArgs } from 'node:util';
-import { distributedOprf, isOprfClientError } from '@taceo/oprf-client';
+import {
+  distributedOprf,
+  isOprfClientError,
+  toOprfUri,
+} from '@taceo/oprf-client';
 
 function bytesToFieldBe(bytes: Uint8Array): bigint {
   let n = 0n;
@@ -28,7 +32,7 @@ if (values.help || positionals.includes('--help')) {
 
 Options:
   --api-key <string>              API key for authentication (required)
-  --services <url1,url2,...>      Comma-separated service URLs (required)
+  --services <url1,url2,...>      Comma-separated service base URLs (required)
   --module <string>               Module name for the OPRF service (required)
   --threshold <number>            Minimum responses needed (required)
   --query <bigint>                Input value as decimal string (required)
@@ -52,7 +56,7 @@ if (missing.length > 0) {
 }
 
 const apiKey = values['api-key']!;
-const services = values['services']!.split(',').map((s) => s.trim());
+const servicesBases = values['services']!.split(',').map((s) => s.trim());
 const module = values['module']!;
 const threshold = parseInt(values['threshold']!, 10);
 const query = BigInt(values['query']!);
@@ -66,6 +70,10 @@ if (isNaN(threshold) || threshold < 1) {
   process.exit(1);
 }
 
+const services = servicesBases.map((s) =>
+  toOprfUri(s, module, protocolVersion)
+);
+
 console.log('Running distributed OPRF...');
 console.log(`  Services: ${services.join(', ')}`);
 console.log(`  Module: ${module}`);
@@ -78,13 +86,11 @@ console.log('');
 try {
   const result = await distributedOprf(
     services,
-    module,
     threshold,
     query,
     domainSeparator,
     {
       auth: { api_key: apiKey },
-      protocolVersion,
     }
   );
 

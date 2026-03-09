@@ -15,5 +15,13 @@ export type {
   OprfResponse,
   OprfPublicKeyWithEpoch,
 } from './types.js';
-export { OprfClientError, isOprfClientError } from './errors.js';
-export type { OprfClientErrorCode } from './errors.js';
+export {
+  OprfClientError,
+  isOprfClientError,
+  NodeError,
+  isNodeError,
+  ServiceError,
+  aggregateError,
+} from './errors.js';
+export type { OprfClientErrorCode, NodeErrorCode } from './errors.js';
+export { toOprfUri } from './uri.js';
