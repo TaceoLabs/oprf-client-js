@@ -57,7 +57,10 @@ export class WebSocketSession {
         reject(
           new NodeError('WsError', {
             reason: `Failed to connect to ${url}`,
-            cause: event instanceof ErrorEvent ? event.error : undefined,
+            cause:
+              typeof ErrorEvent !== 'undefined' && event instanceof ErrorEvent
+                ? event.error
+                : undefined,
           })
         );
       };
@@ -128,7 +131,10 @@ export class WebSocketSession {
         reject(
           new NodeError('WsError', {
             reason: 'WebSocket error',
-            cause: event instanceof ErrorEvent ? event.error : undefined,
+            cause:
+              typeof ErrorEvent !== 'undefined' && event instanceof ErrorEvent
+                ? event.error
+                : undefined,
           })
         );
       };
