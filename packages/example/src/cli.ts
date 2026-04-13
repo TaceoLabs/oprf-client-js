@@ -2,16 +2,9 @@ import { parseArgs } from 'node:util';
 import {
   distributedOprf,
   isOprfClientError,
+  randomBlindingFactor,
   toOprfUri,
 } from '@taceo/oprf-client';
-
-function bytesToFieldBe(bytes: Uint8Array): bigint {
-  let n = 0n;
-  for (let i = 0; i < bytes.length; i++) {
-    n = n * 256n + BigInt(bytes[i]!);
-  }
-  return n;
-}
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -21,7 +14,7 @@ const { values, positionals } = parseArgs({
     module: { type: 'string' },
     threshold: { type: 'string' },
     query: { type: 'string' },
-    'domain-separator': { type: 'string', default: '0' },
+    'domain-separator': { type: 'string' },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -35,6 +28,7 @@ Options:
   --module <string>               Module name for the OPRF service (required)
   --threshold <number>            Minimum responses needed (required)
   --query <bigint>                Input value as decimal string (required)
+  --domain-separator <string>     Domain separator string (default: "OPRF TestNet")
   -h, --help                      Show this help message
 `);
   process.exit(0);
@@ -53,13 +47,22 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+function bytesToFieldBe(bytes: Uint8Array): bigint {
+  let n = 0n;
+  for (let i = 0; i < bytes.length; i++) {
+    n = n * 256n + BigInt(bytes[i]!);
+  }
+  return n;
+}
+
 const apiKey = values['api-key']!;
 const servicesBases = values['services']!.split(',').map((s) => s.trim());
 const module = values['module']!;
 const threshold = parseInt(values['threshold']!, 10);
 const query = BigInt(values['query']!);
+const domainSeparatorStr = values['domain-separator'] ?? 'OPRF TestNet';
 const domainSeparator = bytesToFieldBe(
-  new TextEncoder().encode('OPRF TestNet')
+  new TextEncoder().encode(domainSeparatorStr)
 );
 
 if (isNaN(threshold) || threshold < 1) {
@@ -68,6 +71,7 @@ if (isNaN(threshold) || threshold < 1) {
 }
 
 const services = servicesBases.map((s) => toOprfUri(s, module));
+const blindingFactor = randomBlindingFactor();
 
 console.log('Running distributed OPRF...');
 console.log(`  Services: ${services.join(', ')}`);
@@ -82,10 +86,9 @@ try {
     services,
     threshold,
     query,
+    blindingFactor,
     domainSeparator,
-    {
-      auth: { api_key: apiKey },
-    }
+    { api_key: apiKey }
   );
 
   console.log('Result:');
