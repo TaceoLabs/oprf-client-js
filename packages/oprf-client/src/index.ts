@@ -25,3 +25,4 @@ export {
 } from './errors.js';
 export type { OprfClientErrorCode, NodeErrorCode } from './errors.js';
 export { toOprfUri } from './uri.js';
+export { randomBlindingFactor } from '@taceo/oprf-core';
