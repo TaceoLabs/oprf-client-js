@@ -18,6 +18,7 @@ Services must be pre-built WebSocket URLs. Use `toOprfUri` to construct them fro
 
 ```ts
 import { distributedOprf, toOprfUri } from '@taceo/oprf-client';
+import { randomBlindingFactor } from '@taceo/oprf-core';
 
 const bases = [
   'http://node1.example.com',
@@ -27,12 +28,14 @@ const bases = [
 
 const services = bases.map((s) => toOprfUri(s, 'my-module'));
 
+const blindingFactor = randomBlindingFactor();
 const result = await distributedOprf(
   services,
   2, // threshold
   12345n, // query
+  blindingFactor,
   0n, // domain separator
-  { auth: { api_key: 'secret' } }
+  { api_key: 'secret' } // auth (optional)
 );
 
 console.log(result.output); // OPRF output (bigint)
@@ -109,13 +112,13 @@ const output = finalizeOutput(domainSeparator, query, unblinded);
 
 ### Main Functions
 
-- **`distributedOprf(services, threshold, query, domainSeparator, options?): Promise<VerifiableOprfOutput>`**
+- **`distributedOprf(services, threshold, query, blindingFactor, domainSeparator, auth?): Promise<VerifiableOprfOutput>`**
 
-  End-to-end distributed OPRF: blind → init sessions → challenge → finish → verify → unblind → finalize. Services must be pre-built WS URLs (use `toOprfUri`).
+  End-to-end distributed OPRF: blind → init sessions → challenge → finish → verify → unblind → finalize. Services must be pre-built WS URLs (use `toOprfUri`). The caller must provide a `blindingFactor` (use `randomBlindingFactor()` from `@taceo/oprf-core`).
 
-- **`toOprfUri(service, auth, protocolVersion?): string`**
+- **`toOprfUri(service, authModuleName, clientVersion?): string`**
 
-  Build a WebSocket URL for a single OPRF service. Converts `http://` → `ws://`, `https://` → `wss://`. Appends `/api/{auth}/oprf?version={protocolVersion}`.
+  Build a WebSocket URL for a single OPRF service. Converts `http://` → `ws://`, `https://` → `wss://`. Appends `/api/{authModuleName}/oprf?version={clientVersion}`.
 
 - **`initSessions(services, threshold, request): Promise<OprfSessions>`**
 
@@ -148,10 +151,6 @@ interface VerifiableOprfOutput {
   unblindedResponse: AffinePoint<bigint>;
   oprfPublicKey: AffinePoint<bigint>; // Service public key
   epoch: number; // Key epoch
-}
-
-interface DistributedOprfOptions<Auth = unknown> {
-  auth?: Auth; // Auth payload for OprfRequest
 }
 ```
 

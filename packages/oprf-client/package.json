@@ -1,6 +1,6 @@
 {
   "name": "@taceo/oprf-client",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "WebSocket client for distributed threshold OPRF over a network of service nodes",
   "license": "MIT",
   "repository": {
