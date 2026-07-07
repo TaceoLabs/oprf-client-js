@@ -11,7 +11,7 @@ import {
 import { NodeError } from './errors.js';
 import type { OprfRequest, OprfPublicKeyWithEpoch } from './types.js';
 import { affineToWire, challengeToWire } from './types.js';
-import { WebSocketSession } from './ws.js';
+import { WebSocketSession, type ConnectOptions } from './ws.js';
 
 export interface OprfSessions {
   readonly ws: WebSocketSession[];
@@ -40,7 +40,8 @@ function oprfPublicKeyToAffine(k: OprfPublicKeyWithEpoch): AffinePointLike {
 export async function initSessions<Auth>(
   services: string[],
   threshold: number,
-  oprfRequest: OprfRequest<Auth>
+  oprfRequest: OprfRequest<Auth>,
+  opts?: ConnectOptions
 ): Promise<OprfSessions> {
   const requestWire = {
     request_id: oprfRequest.request_id,
@@ -50,7 +51,7 @@ export async function initSessions<Auth>(
 
   const results = await Promise.allSettled(
     services.map(async (service) => {
-      const session = await WebSocketSession.connect(service);
+      const session = await WebSocketSession.connect(service, opts);
       await session.send(requestWire);
       const response = await session.readOprfResponse();
       return { session, response };

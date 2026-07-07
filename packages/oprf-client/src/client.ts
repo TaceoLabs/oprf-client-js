@@ -24,6 +24,7 @@ import {
 } from './errors.js';
 import type { OprfSessions } from './sessions.js';
 import { initSessions, finishSessions } from './sessions.js';
+import type { ConnectOptions } from './ws.js';
 
 export type { OprfSessions };
 
@@ -94,7 +95,8 @@ export async function distributedOprf(
   query: bigint,
   blindingFactor: BlindingFactor,
   domainSeparator: bigint,
-  auth?: unknown
+  auth?: unknown,
+  opts?: ConnectOptions
 ): Promise<VerifiableOprfOutput> {
   if (new Set(services).size !== services.length) {
     throw new OprfClientError('NonUniqueServices', 'Services must be unique');
@@ -105,11 +107,16 @@ export async function distributedOprf(
 
   let sessions: OprfSessions;
   try {
-    sessions = await initSessions(services, threshold, {
-      request_id: requestId,
-      blinded_query: blindedRequest,
-      auth,
-    });
+    sessions = await initSessions(
+      services,
+      threshold,
+      {
+        request_id: requestId,
+        blinded_query: blindedRequest,
+        auth,
+      },
+      opts
+    );
   } catch (err) {
     // initSessions throws NodeError[] on threshold failure
     if (Array.isArray(err) && err.every(isNodeError)) {
