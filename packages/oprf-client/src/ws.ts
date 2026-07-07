@@ -9,9 +9,20 @@ import { wireToOprfResponse } from './types.js';
 import type { OprfResponse } from './types.js';
 import type { DLogCommitmentsShamirWire } from './types.js';
 import { wireToProofShare, type DLogProofShareShamirWire } from './types.js';
+import { resolveWsUrl } from './redirect.js';
 
 /** Default protocol version sent to server (query param; browser cannot set headers). */
 export const DEFAULT_CLIENT_VERSION = '0.8.0';
+
+/** Options for opening a WebSocket connection. */
+export interface ConnectOptions {
+  /**
+   * Resolve HTTP redirects via a pre-flight fetch before connecting.
+   * Best-effort: if the pre-flight fails, connects to the original URL.
+   * Default: false.
+   */
+  followRedirects?: boolean;
+}
 
 /**
  * Thin WebSocket session: connect, send JSON, receive JSON, handle close.
@@ -33,17 +44,23 @@ export class WebSocketSession {
 
   /**
    * Open a new WebSocket to the given pre-built WS URL.
+   * With opts.followRedirects, first resolves HTTP redirects via a
+   * pre-flight fetch (see resolveWsUrl) and connects to the final URL.
    * Connect errors throw NodeError('WsError', ...).
    */
-  static connect(url: string): Promise<WebSocketSession> {
+  static async connect(
+    url: string,
+    opts?: ConnectOptions
+  ): Promise<WebSocketSession> {
+    const target = opts?.followRedirects ? await resolveWsUrl(url) : url;
     return new Promise((resolve, reject) => {
       let ws: WebSocket;
       try {
-        ws = new WebSocket(url);
+        ws = new WebSocket(target);
       } catch (err) {
         reject(
           new NodeError('WsError', {
-            reason: `Failed to construct WebSocket for ${url}`,
+            reason: `Failed to construct WebSocket for ${target}`,
             cause: err instanceof Error ? err : undefined,
           })
         );
@@ -51,12 +68,12 @@ export class WebSocketSession {
       }
       ws.binaryType = 'arraybuffer';
       ws.onopen = () => {
-        resolve(new WebSocketSession(ws, url));
+        resolve(new WebSocketSession(ws, target));
       };
       ws.onerror = (event) => {
         reject(
           new NodeError('WsError', {
-            reason: `Failed to connect to ${url}`,
+            reason: `Failed to connect to ${target}`,
             cause:
               typeof ErrorEvent !== 'undefined' && event instanceof ErrorEvent
                 ? event.error
