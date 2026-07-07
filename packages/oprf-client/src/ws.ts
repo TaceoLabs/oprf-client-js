@@ -20,6 +20,12 @@ export interface ConnectOptions {
    * Resolve HTTP redirects via a pre-flight fetch before connecting.
    * Best-effort: if the pre-flight fails, connects to the original URL.
    * Default: false.
+   *
+   * Security note: enabling this trusts the HTTP redirect chain to choose
+   * the connection endpoint. The pre-flight GET (request path + version
+   * query param) is visible to every hop in that chain. Secure-to-insecure
+   * (wss→ws) downgrades resolved by the redirect chain are rejected; the
+   * original URL is used instead (see resolveWsUrl).
    */
   followRedirects?: boolean;
 }

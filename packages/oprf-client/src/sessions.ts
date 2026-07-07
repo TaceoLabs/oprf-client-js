@@ -36,6 +36,8 @@ function oprfPublicKeyToAffine(k: OprfPublicKeyWithEpoch): AffinePointLike {
  * Services must be pre-built WS URLs (see toOprfUri / toOprfUriMany).
  * Group by epoch; when an epoch has >= threshold responses with distinct party_id, return those sessions (sorted by party_id).
  * On failure: throws NodeError[] (caller wraps via aggregateError).
+ * `opts` (ConnectOptions) is passed through to each `WebSocketSession.connect`, e.g.
+ * `followRedirects` to resolve HTTP redirects via a pre-flight fetch before connecting.
  */
 export async function initSessions<Auth>(
   services: string[],

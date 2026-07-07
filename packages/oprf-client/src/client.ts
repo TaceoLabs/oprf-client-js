@@ -88,6 +88,8 @@ export function verifyDlogEquality(
 /**
  * Full distributed OPRF: blind → init sessions → challenge → finish → verify → unblind → finalize.
  * Services must be pre-built WS URLs (use toOprfUri / toOprfUriMany).
+ * `opts` (ConnectOptions) is forwarded to each session connect, e.g.
+ * `followRedirects` to resolve HTTP redirects via a pre-flight fetch before connecting.
  */
 export async function distributedOprf(
   services: string[],

@@ -68,4 +68,16 @@ describe('resolveWsUrl', () => {
     const url = 'wss://odd.example.com/api/mod/oprf?version=0.8.0';
     expect(await resolveWsUrl(url)).toBe(url);
   });
+
+  it('rejects a secure-to-insecure downgrade and returns the original wss URL', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        url: 'http://insecure.example.com/api/mod/oprf?version=0.8.0',
+      })
+    );
+
+    const url = 'wss://secure.example.com/api/mod/oprf?version=0.8.0';
+    expect(await resolveWsUrl(url)).toBe(url);
+  });
 });
