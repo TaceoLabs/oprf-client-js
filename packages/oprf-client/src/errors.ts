@@ -24,10 +24,7 @@ export class ServiceError extends Error {
 // ── NodeError ─────────────────────────────────────────────────────────────────
 
 export type NodeErrorCode =
-  | 'ServiceError'
-  | 'WsError'
-  | 'UnexpectedMessage'
-  | 'Unknown';
+  'ServiceError' | 'WsError' | 'UnexpectedMessage' | 'Unknown';
 
 /**
  * Per-node error, discriminated by `code`.

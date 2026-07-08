@@ -149,8 +149,7 @@ export function combineTwoNonceRandomness(
 
 /** Options for combineProofs. Use generator for Rust-compatible KAT; default uses RUST_GENERATOR_AFFINE. */
 export type CombineProofsOptions =
-  | { generator?: AffinePoint<bigint> }
-  | undefined;
+  { generator?: AffinePoint<bigint> } | undefined;
 
 /**
  * Build aggregated commitments and combine proof shares into a single DLogEqualityProof.
