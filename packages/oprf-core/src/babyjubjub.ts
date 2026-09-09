@@ -3,13 +3,12 @@ import { Field } from '@noble/curves/abstract/modular.js';
 import { AffinePoint } from '@noble/curves/abstract/curve.js';
 import { randomBytes } from '@noble/hashes/utils.js';
 
-const CURVE_N = babyjubjub.Point.CURVE().n;
-const COFACTOR = 8n;
-/** Prime subgroup order so Lagrange denominators (e.g. 2) are invertible. */
-const SUBGROUP_SCALAR_ORDER = CURVE_N / COFACTOR;
-export const Fr: ReturnType<typeof Field> = Field(SUBGROUP_SCALAR_ORDER, {
-  BITS: 249,
-});
+/** Prime subgroup order (full group order / 8) so Lagrange denominators (e.g. 2) are invertible. */
+const SUBGROUP_SCALAR_ORDER =
+  2736030358979909402780800718157159386076813972158567259200215660948447373041n;
+if (babyjubjub.Point.CURVE().n % SUBGROUP_SCALAR_ORDER !== 0n)
+  throw new Error('babyjubjub: unexpected curve order');
+export const Fr: ReturnType<typeof Field> = Field(SUBGROUP_SCALAR_ORDER);
 export const Fq: typeof babyjubjub.Point.Fp = babyjubjub.Point.Fp;
 
 /** Prime-order subgroup generator (matches ark_babyjubjub). */
