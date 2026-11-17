@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
+  initSessions,
   generateChallengeRequest,
   OprfClientError,
   isOprfClientError,
@@ -150,6 +151,39 @@ describe('toOprfUri', () => {
     expect(result).toEqual([
       'ws://a.com/api/mymod/oprf?version=1.0.0',
       'wss://b.com/api/mymod/oprf?version=1.0.0',
+    ]);
+  });
+});
+
+describe('initSessions', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('sends request_id as query parameter', async () => {
+    const urls: string[] = [];
+    class FakeWebSocket {
+      static readonly OPEN = 1;
+      onerror: ((e: Event) => void) | null = null;
+      constructor(url: string | URL) {
+        urls.push(String(url));
+        queueMicrotask(() => this.onerror?.(new Event('error')));
+      }
+    }
+    vi.stubGlobal('WebSocket', FakeWebSocket);
+
+    const requestId = '11111111-2222-3333-4444-555555555555';
+    const service = toOprfUri('http://localhost:8080', 'mod', '1.0.0');
+    await expect(
+      initSessions([service], 1, {
+        request_id: requestId,
+        blinded_query: { x: 1n, y: 2n },
+        auth: null,
+      })
+    ).rejects.toBeDefined();
+
+    expect(urls).toEqual([
+      `ws://localhost:8080/api/mod/oprf?version=1.0.0&request_id=${requestId}`,
     ]);
   });
 });
