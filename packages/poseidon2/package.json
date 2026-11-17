@@ -1,6 +1,6 @@
 {
   "name": "@taceo/poseidon2",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Poseidon2 hash function over the BN254 scalar field (state sizes t=2,3,4,8,12,16)",
   "license": "MIT",
   "repository": {
