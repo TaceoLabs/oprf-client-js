@@ -27,17 +27,36 @@ interface AffinePointLike {
   y: bigint;
 }
 
+interface EpochBucket {
+  ws: WebSocketSession[];
+  partyIds: number[];
+  commitments: PartialDLogCommitmentsShamir[];
+  oprfPublicKeys: AffinePointLike[];
+}
+
 function oprfPublicKeyToAffine(k: OprfPublicKeyWithEpoch): AffinePointLike {
   return k.key;
+}
+
+function toNodeError(err: unknown): NodeError {
+  if (err && err instanceof NodeError) {
+    return err;
+  }
+  return new NodeError('Unknown', {
+    reason: String(err),
+    cause: err instanceof Error ? err : undefined,
+  });
 }
 
 /**
  * Open WebSockets to each service in parallel, send oprfRequest, collect OprfResponse.
  * Services must be pre-built WS URLs (see toOprfUri / toOprfUriMany).
- * Group by epoch; when an epoch has >= threshold responses with distinct party_id, return those sessions (sorted by party_id).
- * On failure: throws NodeError[] (caller wraps via aggregateError).
+ * Responses are processed as they arrive and grouped by epoch; as soon as an epoch has
+ * threshold responses with distinct party_id, those sessions are returned (sorted by party_id)
+ * without waiting for the remaining services, and every other open session is closed.
+ * On failure: closes all opened sessions and throws NodeError[] (caller wraps via aggregateError).
  */
-export async function initSessions<Auth>(
+export function initSessions<Auth>(
   services: string[],
   threshold: number,
   oprfRequest: OprfRequest<Auth>
@@ -48,96 +67,98 @@ export async function initSessions<Auth>(
     auth: oprfRequest.auth,
   };
 
-  const results = await Promise.allSettled(
-    services.map(async (service) => {
-      const session = await WebSocketSession.connect(service);
-      await session.send(requestWire);
-      const response = await session.readOprfResponse();
-      return { session, response };
-    })
-  );
+  return new Promise<OprfSessions>((resolve, reject) => {
+    const epochMap = new Map<number, EpochBucket>();
+    const nodeErrors: NodeError[] = [];
+    // Every session we managed to open, so none is left dangling once we are done.
+    const opened = new Set<WebSocketSession>();
+    let pending = services.length;
+    let done = false;
 
-  const epochMap = new Map<
-    number,
-    {
-      ws: WebSocketSession[];
-      partyIds: number[];
-      commitments: PartialDLogCommitmentsShamir[];
-      oprfPublicKeys: AffinePointLike[];
-    }
-  >();
-  const nodeErrors: NodeError[] = [];
-
-  for (let i = 0; i < results.length; i++) {
-    const r = results[i]!;
-    if (r.status === 'rejected') {
-      // NodeError thrown from ws methods; wrap unknown errors
-      const err = r.reason;
-      if (err && err instanceof NodeError) {
-        nodeErrors.push(err);
-      } else {
-        nodeErrors.push(
-          new NodeError('Unknown', {
-            reason: String(err),
-            cause: err instanceof Error ? err : undefined,
-          })
-        );
+    const closeAllExcept = (keep: ReadonlySet<WebSocketSession>) => {
+      for (const session of opened) {
+        if (!keep.has(session)) session.close();
       }
-      continue;
-    }
-    const { session, response } = r.value;
-    const epoch = response.oprf_pub_key_with_epoch.epoch;
-    let bucket = epochMap.get(epoch);
-    if (!bucket) {
-      bucket = { ws: [], partyIds: [], commitments: [], oprfPublicKeys: [] };
-      epochMap.set(epoch, bucket);
-    }
-    if (bucket.partyIds.includes(response.party_id)) {
-      session.close();
-      continue;
-    }
-    bucket.ws.push(session);
-    bucket.partyIds.push(response.party_id);
-    bucket.commitments.push(response.commitments);
-    bucket.oprfPublicKeys.push(
-      oprfPublicKeyToAffine(response.oprf_pub_key_with_epoch)
-    );
+    };
 
-    if (bucket.ws.length >= threshold) {
-      // close other sessions that we won't use
-      for (let j = i + 1; j < results.length; j++) {
-        const r2 = results[j];
-        if (r2?.status === 'rejected') {
-          continue;
+    const onSettled = () => {
+      pending--;
+      if (pending === 0 && !done) {
+        // Not enough responses — throw collected node errors for caller to aggregate
+        done = true;
+        closeAllExcept(new Set());
+        reject(nodeErrors);
+      }
+    };
+
+    const onResponse = (
+      session: WebSocketSession,
+      response: Awaited<ReturnType<WebSocketSession['readOprfResponse']>>
+    ) => {
+      const epoch = response.oprf_pub_key_with_epoch.epoch;
+      let bucket = epochMap.get(epoch);
+      if (!bucket) {
+        bucket = { ws: [], partyIds: [], commitments: [], oprfPublicKeys: [] };
+        epochMap.set(epoch, bucket);
+      }
+      if (bucket.partyIds.includes(response.party_id)) {
+        session.close();
+        return;
+      }
+      bucket.ws.push(session);
+      bucket.partyIds.push(response.party_id);
+      bucket.commitments.push(response.commitments);
+      bucket.oprfPublicKeys.push(
+        oprfPublicKeyToAffine(response.oprf_pub_key_with_epoch)
+      );
+
+      if (bucket.ws.length >= threshold) {
+        done = true;
+        // close every session we won't use, including ones still waiting for a response
+        closeAllExcept(new Set(bucket.ws));
+        const chosen = bucket;
+        const order = chosen.partyIds
+          .map((id, i) => ({ id, i }))
+          .sort((a, b) => a.id - b.id);
+        resolve({
+          ws: order.map(({ i }) => chosen.ws[i]!),
+          partyIds: order.map(({ id }) => id),
+          commitments: order.map(({ i }) => chosen.commitments[i]!),
+          oprfPublicKeys: order.map(({ i }) => chosen.oprfPublicKeys[i]!),
+          epoch,
+        });
+      }
+    };
+
+    if (pending === 0) {
+      done = true;
+      reject(nodeErrors);
+      return;
+    }
+
+    for (const service of services) {
+      const run = async () => {
+        const session = await WebSocketSession.connect(service);
+        opened.add(session);
+        if (done) {
+          // threshold already reached (or failed) while this one was connecting
+          session.close();
+          return;
         }
-        r2?.value?.session.close();
-      }
-      break;
-    }
-  }
-
-  for (const [epoch, bucket] of epochMap) {
-    if (bucket.ws.length >= threshold) {
-      for (const [otherEpoch, otherBucket] of epochMap) {
-        if (otherEpoch !== epoch) {
-          for (const ws of otherBucket.ws) ws.close();
+        session.send(requestWire);
+        const response = await session.readOprfResponse();
+        if (done) {
+          session.close();
+          return;
         }
-      }
-      const order = bucket.partyIds
-        .map((id, i) => ({ id, i }))
-        .sort((a, b) => a.id - b.id);
-      return {
-        ws: order.map(({ i }) => bucket.ws[i]!),
-        partyIds: order.map(({ id }) => id),
-        commitments: order.map(({ i }) => bucket.commitments[i]!),
-        oprfPublicKeys: order.map(({ i }) => bucket.oprfPublicKeys[i]!),
-        epoch,
+        onResponse(session, response);
       };
+      run().then(onSettled, (err: unknown) => {
+        if (!done) nodeErrors.push(toNodeError(err));
+        onSettled();
+      });
     }
-  }
-
-  // Not enough responses — throw collected node errors for caller to aggregate
-  throw nodeErrors;
+  });
 }
 
 /**
