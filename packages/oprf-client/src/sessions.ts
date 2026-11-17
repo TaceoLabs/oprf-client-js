@@ -50,7 +50,10 @@ export async function initSessions<Auth>(
 
   const results = await Promise.allSettled(
     services.map(async (service) => {
-      const session = await WebSocketSession.connect(service);
+      const session = await WebSocketSession.connect(
+        service,
+        oprfRequest.request_id
+      );
       await session.send(requestWire);
       const response = await session.readOprfResponse();
       return { session, response };

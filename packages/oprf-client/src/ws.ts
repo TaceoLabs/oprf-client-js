@@ -32,14 +32,16 @@ export class WebSocketSession {
   }
 
   /**
-   * Open a new WebSocket to the given pre-built WS URL.
+   * Open a new WebSocket to the given pre-built WS URL, appending `request_id` as query param.
    * Connect errors throw NodeError('WsError', ...).
    */
-  static connect(url: string): Promise<WebSocketSession> {
+  static connect(url: string, requestId: string): Promise<WebSocketSession> {
     return new Promise((resolve, reject) => {
       let ws: WebSocket;
       try {
-        ws = new WebSocket(url);
+        const connectUrl = new URL(url);
+        connectUrl.searchParams.set('request_id', requestId);
+        ws = new WebSocket(connectUrl);
       } catch (err) {
         reject(
           new NodeError('WsError', {
